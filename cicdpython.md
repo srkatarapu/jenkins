@@ -103,6 +103,8 @@ services:
     volumes:
       - jenkins_home:/var/jenkins_home
     restart: always
+    depends_on:
+      - dind
 
   sonarqube:
     image: sonarqube:community
@@ -111,15 +113,45 @@ services:
       - "9000:9000"
     environment:
       - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://db:5432/sonarqube
+      - SONARQUBE_JDBC_USERNAME=sonarqube
+      - SONARQUBE_JDBC_PASSWORD=sonarqube
+    depends_on:
+      - db
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
+    restart: always
+
+  dind:
+    image: docker:dind
+    container_name: dind
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    volumes:
+      - jenkins-docker-certs:/certs/client
+    ports:
+      - "2376:2376"
+    command: ["--storage-driver", "overlay2"]
+
+  db:
+    image: postgres:12
+    container_name: sonarqube-db
+    environment:
+      - POSTGRES_USER=sonarqube
+      - POSTGRES_PASSWORD=sonarqube
+    volumes:
+      - sonarqube_db:/var/lib/postgresql/data
     restart: always
 
 volumes:
   jenkins_home:
   sonarqube_data:
   sonarqube_extensions:
+  jenkins-docker-certs:
+  sonarqube_db:
+
 ```
 
 #### 2. Run Docker Compose:
