@@ -94,3 +94,84 @@ sudo systemctl enable sonarqube
 ### 8. Access SonarQube Web Interface:
 SonarQube should now be running. Access the web interface using your browser by navigating to `http://your_server_ip_or_domain:9000`.
 Follow the on-screen instructions to set up your SonarQube administrator account and configure your SonarQube instance.
+
+
+Sure, here's the step-by-step guide to install SonarQube using Docker Compose:
+
+### Execute Update and Upgrade Commands
+
+```bash
+sudo apt update
+sudo apt upgrade
+```
+
+### Install Docker
+
+```bash
+sudo apt install docker.io
+docker --version
+```
+
+### Install Docker Compose
+
+```bash
+sudo apt install docker-compose -y
+```
+
+### Create Docker Compose File
+
+```bash
+sudo vi docker-compose.yml
+```
+
+### Add Following Lines to Docker Compose File and Save
+
+```yaml
+version: "3"
+services:
+  sonarqube:
+    image: sonarqube:community
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    ports:
+      - "9000:9000"
+  db:
+    image: postgres:12
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+    volumes:
+      - postgresql:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  postgresql:
+  postgresql_data:
+```
+
+### Run Docker Compose Command
+
+```bash
+sudo docker-compose up -d
+```
+
+### Monitor Logs Until SonarQube is Operational
+
+```bash
+sudo docker-compose logs --follow
+```
+
+This guide will help you install SonarQube using Docker Compose, from updating and upgrading your system to running SonarQube and monitoring its logs until it's operational.
+
