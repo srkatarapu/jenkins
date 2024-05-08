@@ -1,40 +1,61 @@
-Prerequisites
-Minimum hardware requirements:
 
-256 MB of RAM
+Below is the step-by-step guide to installing Jenkins on Debian/Ubuntu with necessary commands and configuration:
 
-1 GB of drive space (although 10 GB is a recommended minimum if running Jenkins as a Docker container)
+### Prerequisites
 
-Recommended hardware configuration for a small team:
+Ensure that your system meets the minimum hardware requirements:
+- **RAM**: 256 MB minimum (4 GB+ recommended)
+- **Disk Space**: 1 GB minimum (50 GB+ recommended)
 
-4 GB+ of RAM
-
-50 GB+ of drive space
-
-Software requirements:
+Ensure Java is installed:
+```bash
 sudo apt update
-sudo apt install fontconfig openjdk-17-jre
+sudo apt install openjdk-17-jre
 java -version
+```
 
-jenkins:
+### Step 1: Download and Add Jenkins Key
 
+```bash
 sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
   https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+```
+
+### Step 2: Configure Firewall (if applicable)
+
+If you have a firewall installed, you must add Jenkins as an exception. Replace `YOURPORT` with the port you want to use (e.g., 8080).
+
+```bash
+YOURPORT=8080
+PERM="--permanent"
+SERV="$PERM --service=jenkins"
+
+sudo firewall-cmd $PERM --new-service=jenkins
+sudo firewall-cmd $SERV --set-short="Jenkins ports"
+sudo firewall-cmd $SERV --set-description="Jenkins port exceptions"
+sudo firewall-cmd $SERV --add-port=$YOURPORT/tcp
+sudo firewall-cmd $PERM --add-service=jenkins
+sudo firewall-cmd --zone=public --add-service=http --permanent
+sudo firewall-cmd --reload
+```
+
+### Step 3: Add Jenkins Repository
+
+```bash
 echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
   https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
   /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt-get update
-sudo apt-get install jenkinsCertainly! Here's a step-by-step guide to set up Jenkins on a Linux system:
+```
 
-1. **Install Jenkins**:
-   - First, you need to install Jenkins on your system. The installation method may vary depending on your Linux distribution. For example, on Ubuntu, you can use the following commands:
-     ```
-     sudo apt update
-     sudo apt install jenkins
-     ```
+### Step 4: Install Jenkins
+
+```bash
+sudo apt-get update
+sudo apt-get install jenkins
+```
    - Follow the prompts to complete the installation process.
 
-2. **Configure Jenkins as a service**:
+### Step 5: **Configure Jenkins as a service**:
    - Jenkins may not start automatically after installation. To configure it as a service, create a systemd service file. Create or edit the file `/etc/systemd/system/jenkins.service` using a text editor (e.g., `nano` or `vim`), and add the following content:
      ```
      [Unit]
@@ -46,38 +67,54 @@ sudo apt-get install jenkinsCertainly! Here's a step-by-step guide to set up Jen
      Type=simple
      User=jenkins
      Group=jenkins
+     Environment="JENKINS_HOME=/var/lib/jenkins"
      ExecStart=/usr/bin/java -jar /usr/share/jenkins/jenkins.war
      Restart=always
+     StandardOutput=syslog
+     StandardError=syslog
+     SyslogIdentifier=jenkins
 
      [Install]
      WantedBy=multi-user.target
      ```
    - Save the file and close the text editor.
 
-3. **Create a Jenkins user**:
+6. **Create a Jenkins user**:
    - Create a dedicated user for running Jenkins. You can do this with the following command:
      ```
      sudo useradd -m -s /bin/bash jenkins
+     or
+     sudo useradd -r jenkins -s /usr/sbin/nologin
      ```
 
-4. **Set Jenkins home directory**:
+7. **Set Jenkins home directory**:
    - Jenkins requires a home directory for storing configuration and data. By default, this is set to `/var/lib/jenkins`, but you can customize it by setting the `JENKINS_HOME` environment variable in the systemd service file.
 
-5. **Start and enable Jenkins service**:
+8. **Start and enable Jenkins service**:
    - Start the Jenkins service and enable it to start on system boot with the following commands:
      ```
      sudo systemctl start jenkins
      sudo systemctl enable jenkins
      ```
+Direct Console Log Output to systemd-journald
+Jenkins console log output will be directed to systemd-journald. You can troubleshoot using
+```
+journalctl -u jenkins.service.
 
-6. **Access Jenkins Web Interface**:
-   - Jenkins should now be running and accessible through your web browser. Open your browser and navigate to `http://your_server_ip_or_domain:8080`.
-   - Follow the on-screen instructions to complete the initial Jenkins setup, including unlocking Jenkins and installing recommended plugins.
+````
 
-7. **Configure Jenkins**:
-   - Once Jenkins is unlocked and plugins are installed, you can start configuring Jenkins for your specific needs, such as creating jobs, configuring build pipelines, and setting up user authentication.
 
-That's it! You've now set up Jenkins on your Linux system and can start using it for continuous integration and automation tasks. If you encounter any issues, you can refer to the Jenkins documentation or use the provided commands for troubleshooting.
+### Post-Installation Steps
 
+#### Verify Jenkins Installation
+
+Check the status of Jenkins service:
+```bash
+sudo systemctl status jenkins
+```
+
+#### Access Jenkins Web Interface
+
+Jenkins should now be running. Access the web interface using your browser by navigating to `http://your_server_ip_or_domain:8080`.
 
 
