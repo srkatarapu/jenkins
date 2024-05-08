@@ -10,15 +10,8 @@ Ensure that your system meets the minimum hardware requirements:
 Ensure Java is installed:
 ```bash
 sudo apt update
-sudo apt install openjdk-17-jre
+sudo apt install fontconfig openjdk-17-jre
 java -version
-```
-
-### Step 1: Download and Add Jenkins Key
-
-```bash
-sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
-  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
 ```
 
 ### Step 2: Configure Firewall (if applicable)
@@ -39,12 +32,16 @@ sudo firewall-cmd --zone=public --add-service=http --permanent
 sudo firewall-cmd --reload
 ```
 
-### Step 3: Add Jenkins Repository
+### Step 3: Download and Add Jenkins Key and Jenkins Repository
 
 ```bash
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
 echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
   https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
   /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins
 ```
 
 ### Step 4: Install Jenkins
@@ -96,16 +93,16 @@ sudo apt-get install jenkins
      sudo systemctl start jenkins
      sudo systemctl enable jenkins
      ```
+
+
+
+### Post-Installation Steps
 Direct Console Log Output to systemd-journald
 Jenkins console log output will be directed to systemd-journald. You can troubleshoot using
 ```
 journalctl -u jenkins.service.
 
 ````
-
-
-### Post-Installation Steps
-
 #### Verify Jenkins Installation
 
 Check the status of Jenkins service:
