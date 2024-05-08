@@ -113,8 +113,121 @@ sudo systemctl status jenkins
 #### Access Jenkins Web Interface
 
 Jenkins should now be running. Access the web interface using your browser by navigating to `http://your_server_ip_or_domain:8080`.
+===========================================================================
 
+Sure, below is a step-by-step guide to install Jenkins using Docker Compose:
 
+### 1. Create a directory for Jenkins and navigate into it:
+
+```bash
+mkdir jenkins && cd jenkins
+```
+
+### 2. Create a `docker-compose.yml` file:
+
+```bash
+touch docker-compose.yml
+```
+
+### 3. Open `docker-compose.yml` file in a text editor (e.g., `nano` or `vi`):
+
+```bash
+nano docker-compose.yml
+```
+
+### 4. Add the following content to `docker-compose.yml`:
+
+```yaml
+version: '3'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    restart: always
+    environment:
+      TZ: "Asia/Kolkata"  # Specify your timezone here
+```
+
+or 
+```
+version: '3'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    restart: always
+
+  dind:
+    image: docker:dind
+    container_name: jenkins-docker
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: "/certs"
+      TZ: "Asia/Kolkata" 
+    volumes:
+      - jenkins-docker-certs:/certs/client
+    ports:
+      - "2376:2376"
+    command: ["--storage-driver", "overlay2"]
+
+volumes:
+  jenkins_home:
+  jenkins-docker-certs:
+```
+
+Replace `"Your/Timezone"` with your actual timezone (e.g., `"America/New_York"`).
+
+### 5. Save and close the file.
+
+For `nano`, press `Ctrl + X`, then `Y`, and then press `Enter`.
+
+### 6. Run Jenkins using Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+### 7. Access Jenkins Web Interface:
+
+Jenkins should now be running. Access the web interface using your browser by navigating to `http://localhost:8080`.
+
+### 8. Unlock Jenkins:
+
+Follow the on-screen instructions to unlock Jenkins. You can find the initial administrator password in the logs or inside the Jenkins container.
+
+### 9. Install Recommended Plugins:
+
+After unlocking Jenkins, you will be prompted to install recommended plugins. Proceed with the installation.
+
+### 10. Set Up Admin User:
+
+Create an administrator user and complete the setup wizard.
+
+### 11. Start Using Jenkins:
+
+You can now start using Jenkins for your CI/CD pipelines.
+
+### 12. Stop and Remove Jenkins Container (Optional):
+
+To stop and remove the Jenkins container while preserving Jenkins data, run:
+
+```bash
+docker-compose down
+```
+
+=====================================================
 **DOCKER**
 Open up a terminal window.
 
